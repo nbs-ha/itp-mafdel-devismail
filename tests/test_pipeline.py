@@ -133,3 +133,29 @@ def test_api_flow_chat_and_creation(monkeypatch):
     bad = c.post(f"/sessions/{sid}/creer-devis", headers=h, json={"proposition": {"client": {"statut": "introuvable"}, "lignes": []}})
     assert bad.status_code == 422 and "code client manquant" in bad.json()["detail"]["bloquants"]
     api.app.dependency_overrides.clear()
+
+
+def test_demo_mode_flow(monkeypatch):
+    monkeypatch.setenv("DEVIS_IA_TOKEN", "secret")
+    monkeypatch.setenv("DEVIS_IA_DEMO", "1")
+    api.app.dependency_overrides.clear()
+    api.app.state.divalto = MockDivalto()
+    c, h = TestClient(api.app), {"X-API-Key": "secret"}
+    r = c.post("/analyse", headers=h, json={"corps": "bonjour"}).json()
+    assert r["proposition"]["lignes"][0]["prix_unitaire"] == 238.07 and not r["alertes"]
+    r2 = c.post(f"/sessions/{r['session_id']}/corriger", headers=h, json={"message": "mets 4 pièces"}).json()
+    assert r2["proposition"]["lignes"][0]["quantite"] == 4
+    r3 = c.post(f"/sessions/{r['session_id']}/corriger", headers=h, json={"message": "encore 7"}).json()
+    assert r3["proposition"]["lignes"][0]["quantite"] == 7
+
+
+def test_manifest_and_static(monkeypatch):
+    monkeypatch.setenv("DEVIS_IA_PUBLIC_URL", "https://devis-ia.test:8443/")
+    c = TestClient(api.app)
+    m = c.get("/manifest.xml")
+    assert m.status_code == 200 and "{{BASE_URL}}" not in m.text
+    assert "https://devis-ia.test:8443/addin/taskpane.html" in m.text
+    import xml.dom.minidom
+    xml.dom.minidom.parseString(m.text)  # XML bien formé
+    assert c.get("/addin/taskpane.html").status_code == 200
+    assert c.get("/addin/taskpane.js").status_code == 200

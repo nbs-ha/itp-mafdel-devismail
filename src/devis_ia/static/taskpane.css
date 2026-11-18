@@ -1,0 +1,36 @@
+:root { --bleu:#1f4e79; --gris:#f3f4f6; --bord:#d0d5dd; --ok:#067647; --warn:#b54708; --ko:#b42318; font-family: "Segoe UI", system-ui, sans-serif; font-size: 13px; }
+body { margin: 0; padding: 10px; color: #1d2939; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+h1 { font-size: 16px; margin: 0; color: var(--bleu); }
+h2 { font-size: 13px; margin: 14px 0 6px; color: var(--bleu); border-bottom: 1px solid var(--bord); padding-bottom: 2px; }
+button { border: 1px solid var(--bord); background: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+button.primary { background: var(--bleu); color: #fff; border-color: var(--bleu); }
+button:disabled { opacity: .5; cursor: default; }
+input, textarea { border: 1px solid var(--bord); border-radius: 4px; padding: 3px 5px; font: inherit; box-sizing: border-box; }
+textarea { width: 100%; }
+#statut { margin: 8px 0; min-height: 1em; color: #475467; }
+#statut.erreur { color: var(--ko); }
+.grille { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; align-items: center; }
+.grille label { color: #475467; }
+table { border-collapse: collapse; width: 100%; margin-top: 4px; }
+th, td { border: 1px solid var(--bord); padding: 3px; vertical-align: top; }
+th { background: var(--gris); text-align: left; font-weight: 600; }
+td input { width: 100%; }
+td.num input { width: 62px; }
+tr.s-ok td:first-child { border-left: 4px solid var(--ok); }
+tr.s-a_verifier td:first-child { border-left: 4px solid var(--warn); }
+tr.s-introuvable td:first-child { border-left: 4px solid var(--ko); }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 11px; background: var(--gris); }
+.badge.trouve { background: #d1fadf; color: var(--ok); }
+.badge.ambigu { background: #fef0c7; color: var(--warn); }
+.badge.introuvable { background: #fee4e2; color: var(--ko); }
+.alertes { background: #fef0c7; border: 1px solid #fedf89; padding: 6px; border-radius: 4px; margin-top: 8px; }
+.chat { display: flex; gap: 6px; align-items: flex-start; }
+.actions { margin-top: 12px; }
+.prix { white-space: nowrap; }
+.sans-prix { color: var(--warn); }
+.remarque { color: #475467; font-size: 12px; }
+details { margin-top: 16px; color: #475467; }
+.defile { overflow-x: auto; }
+td.remarque { min-width: 110px; }
+td button { padding: 2px 6px; }

@@ -12,7 +12,10 @@ import os
 import time
 import uuid
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .agent import SessionDevis
@@ -21,6 +24,7 @@ from .eml_parser import ATTACHMENT_TYPES, MAX_ATTACHMENT_BYTES, Attachment, Pars
 
 SESSION_TTL_S = 4 * 3600
 
+STATIC = Path(__file__).parent / "static"
 app = FastAPI(title="Devis IA Mafdel", version="0.1.0")
 _sessions: dict[str, tuple[float, SessionDevis]] = {}
 
@@ -32,7 +36,10 @@ def get_divalto() -> DivaltoClient:
 
 
 def get_client():
-    """Client Anthropic ; surchargé dans les tests."""
+    """Client Anthropic ; surchargé dans les tests. En mode démo : faux client sans réseau."""
+    if os.environ.get("DEVIS_IA_DEMO") == "1":
+        from .demo import DemoClient
+        return DemoClient()
     return None  # SessionDevis crée anthropic.Anthropic()
 
 
@@ -140,3 +147,14 @@ def creer_devis(sid: str, body: CreationIn, divalto: DivaltoClient = Depends(get
     lignes = [{k: l.get(k) for k in ("code_article", "quantite", "unite", "longueur_mm", "remarque")} for l in p["lignes"]]
     out = divalto.creer_devis(p["client"]["code_client"], p.get("reference_client"), lignes)
     return {"devis": out}
+
+
+@app.get("/manifest.xml")
+def manifest(request: Request):
+    """Manifeste du complément Outlook. URL publique : DEVIS_IA_PUBLIC_URL, sinon déduite de la requête."""
+    base = os.environ.get("DEVIS_IA_PUBLIC_URL", str(request.base_url)).rstrip("/")
+    xml = (STATIC / "manifest.template.xml").read_text(encoding="utf-8").replace("{{BASE_URL}}", base)
+    return Response(xml, media_type="application/xml")
+
+
+app.mount("/addin", StaticFiles(directory=STATIC), name="addin")

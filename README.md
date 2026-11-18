@@ -59,6 +59,26 @@ $env:ANTHROPIC_API_KEY="..." ; $env:DEVIS_IA_TOKEN="..." ; $env:DEVIS_IA_DIVALTO
 - A installer comme service Windows (ex. NSSM) avec redémarrage automatique ; secrets hors du code.
 - Accès sortant autorisé uniquement vers `api.anthropic.com` ; accès aux web services Divalto en interne avec un compte technique dédié.
 
+## Complément Outlook (`src/devis_ia/static/`)
+
+Panneau latéral en JavaScript simple, servi par l'API elle-même (`/addin/...`) : un seul service à déployer, pas de CORS. Bouton **Devis IA** dans le ruban de lecture d'un mail. Le panneau lit le mail et ses PDF (Office.js), appelle l'API, affiche le client, les lignes (éditables), les points à vérifier, le chat de correction et le bouton de création (confirmation en deux clics). Les prix sont en lecture seule ; modifier un article ou une quantité invalide le prix, à recalculer via le chat.
+
+**Mode démo** (sans clé Claude ni Divalto) : `DEVIS_IA_DEMO=1` rejoue un scénario préenregistré à travers la vraie boucle et les vrais garde-fous. Essai dans un navigateur : `http://localhost:8000/addin/taskpane.html` (sans Outlook, un mail d'exemple est utilisé).
+
+```bash
+DEVIS_IA_DEMO=1 DEVIS_IA_TOKEN=secret uvicorn devis_ia.api:app --port 8000
+```
+
+### Installation sur un poste de test (Microsoft 365)
+1. Serveur accessible en **HTTPS** sur le poste (certificat de confiance), `DEVIS_IA_PUBLIC_URL=https://<nom-du-serveur>:8443`.
+2. Télécharger `https://<nom-du-serveur>:8443/manifest.xml`.
+3. Outlook : Obtenir des compléments > Mes compléments > Compléments personnalisés > Ajouter à partir d'un fichier > choisir le manifeste. (Intitulés à confirmer sur votre version.)
+4. Désinstallation : même écran, menu « … » du complément > Supprimer. Rien n'est installé sur le poste.
+5. Le poste doit pouvoir charger `https://appsforoffice.microsoft.com/lib/1/hosted/office.js` (Office.js est requis par Outlook).
+6. Au premier usage, saisir le jeton dans Réglages (POC).
+
+**Non testé dans un vrai Outlook** : le manifeste, la lecture des pièces jointes et le chargement du panneau restent à valider sur un poste Windows. Le panneau lui-même a été vérifié dans Chromium. Limites actuelles : le panneau n'est pas épinglé (il se ferme en changeant de mail) ; la création de devis ne porte que sur les lignes principales, pas sur les variantes.
+
 ## À faire pour passer du POC au pilote
 1. **Brancher les web services Divalto** dans `DivaltoWebServiceClient` : recherche client, devis d'un client / lecture d'un devis, recherche article, tarification (prix client et remises), stock/délai, et **création de devis** (non implémentée ici volontairement : uniquement après validation humaine). Contrat d'API à obtenir auprès de l'intégrateur.
 2. Remplacer `data/mock_divalto.json` par les vraies données pour la mesure de qualité.

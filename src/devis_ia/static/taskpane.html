@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Devis IA</title>
+  <link rel="stylesheet" href="taskpane.css">
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" onerror="window.__noOffice = true"></script>
+</head>
+<body>
+  <header>
+    <h1>Devis IA</h1>
+    <button id="btn-analyse" class="primary">Analyser ce mail</button>
+  </header>
+  <p id="statut" role="status"></p>
+  <section id="resultat" hidden>
+    <h2>Client</h2>
+    <div id="client"></div>
+    <h2>Demande</h2>
+    <div id="meta"></div>
+    <div id="groupes"></div>
+    <div id="alertes" class="alertes" hidden></div>
+    <h2>Points à vérifier</h2>
+    <ul id="points"></ul>
+    <h2>Échange avec l'IA</h2>
+    <div class="chat">
+      <textarea id="message" rows="2" placeholder="Ex. : mets 60 mètres, le client est DEXIS Rennes…"></textarea>
+      <button id="btn-envoyer">Envoyer</button>
+    </div>
+    <div class="actions">
+      <button id="btn-creer" class="primary">Créer le devis dans Divalto</button>
+    </div>
+  </section>
+  <details id="reglages">
+    <summary>Réglages</summary>
+    <label>Jeton d'accès <input id="jeton" type="password" autocomplete="off"></label>
+  </details>
+  <script src="taskpane.js"></script>
+</body>
+</html>

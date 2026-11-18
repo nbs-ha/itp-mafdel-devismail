@@ -3,10 +3,10 @@ name = "devis-ia"
 version = "0.1.0"
 description = "POC Mafdel : création assistée de devis Divalto à partir d'e-mails, via l'API Claude"
 requires-python = ">=3.10"
-dependencies = ["anthropic>=1.0"]
+dependencies = ["anthropic>=1.0", "fastapi>=0.110", "uvicorn>=0.29"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "httpx"]
 
 [project.scripts]
 devis-ia = "devis_ia.cli:main"

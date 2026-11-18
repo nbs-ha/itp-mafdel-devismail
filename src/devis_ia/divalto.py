@@ -20,6 +20,9 @@ class DivaltoClient(Protocol):
     def rechercher_article(self, texte: str = "", code: str = "") -> list[dict]: ...
     def prix_article(self, code_article: str, code_client: str, quantite: float) -> dict: ...
     def delai_article(self, code_article: str, quantite: float) -> dict: ...
+    def creer_devis(self, code_client: str, reference_client: str | None, lignes: list[dict]) -> dict:
+        """Crée le devis dans Divalto. N'envoie AUCUN prix : Divalto tarifie. A n'appeler qu'après validation humaine."""
+        ...
 
 
 def _norm(s: str) -> set[str]:
@@ -93,6 +96,11 @@ class MockDivalto:
             return {"erreur": f"article inconnu : {code_article}"}
         return {"code_article": code_article, "delai": None, "message": "Délai non renseigné (simulation)"}
 
+    def creer_devis(self, code_client, reference_client, lignes):
+        self.devis_crees = getattr(self, "devis_crees", [])
+        self.devis_crees.append({"code_client": code_client, "reference_client": reference_client, "lignes": lignes})
+        return {"numero": f"SIMUL-{len(self.devis_crees):04d}", "simule": True}
+
 
 class DivaltoWebServiceClient:
     """Squelette pour les web services Divalto. A COMPLETER avec le contrat d'API réel.
@@ -115,3 +123,4 @@ class DivaltoWebServiceClient:
     def rechercher_article(self, texte="", code=""): self._todo("recherche article")
     def prix_article(self, code_article, code_client, quantite): self._todo("tarification (prix client, remises)")
     def delai_article(self, code_article, quantite): self._todo("stock / délai")
+    def creer_devis(self, code_client, reference_client, lignes): self._todo("création de devis")

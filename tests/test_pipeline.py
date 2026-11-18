@@ -89,3 +89,47 @@ def test_mock_divalto():
     assert d.rechercher_client(email="x@sefitransmission.fr")[0]["code"] == "CSEFIS14"
     assert d.rechercher_article(texte="fer à souder MC50")[0]["code"] == "MC50"
     assert d.prix_article("DFBW3", "X", 1)["prix_disponible"] is False
+
+
+# ---- API ----
+from fastapi.testclient import TestClient  # noqa: E402
+
+from devis_ia import api  # noqa: E402
+
+
+def _client(monkeypatch, steps):
+    monkeypatch.setenv("DEVIS_IA_TOKEN", "secret")
+    fake = FakeClient(steps)
+    api.app.dependency_overrides[api.get_client] = lambda: fake
+    api.app.state.divalto = MockDivalto()
+    return TestClient(api.app), fake
+
+
+def test_api_auth(monkeypatch):
+    c, _ = _client(monkeypatch, [])
+    assert c.post("/analyse", json={"corps": "x"}).status_code == 401
+
+
+def test_api_flow_chat_and_creation(monkeypatch):
+    prop1 = {"intention": "nouveau_devis", "client": {"statut": "trouve", "code_client": "CSEFIS14"},
+             "lignes": [{"designation_demandee": "x", "code_article": "J60", "quantite": 1, "statut": "ok"}],
+             "points_a_verifier": []}
+    prop2 = {**prop1, "lignes": [{"designation_demandee": "x", "code_article": "J60", "quantite": 3, "statut": "ok"}]}
+    c, fake = _client(monkeypatch, [
+        [tool_use(1, "rechercher_article", code="J60")], [tool_use(2, "proposer_devis", **prop1)],
+        [tool_use(3, "proposer_devis", **prop2)],
+    ])
+    h = {"X-API-Key": "secret"}
+    r = c.post("/analyse", headers=h, json={"corps": "Bonjour 1 pince J60", "objet": "ddp"})
+    assert r.status_code == 200
+    sid = r.json()["session_id"]
+    r2 = c.post(f"/sessions/{sid}/corriger", headers=h, json={"message": "mets 3", "proposition_actuelle": prop1})
+    assert r2.json()["proposition"]["lignes"][0]["quantite"] == 3
+    # le tour suivant porte le tool_result en attente + le message (pas de tool_use orphelin)
+    last_user = fake.calls[-1]["messages"][-2]["content"]
+    assert last_user[0]["type"] == "tool_result" and last_user[-1]["type"] == "text"
+    ok = c.post(f"/sessions/{sid}/creer-devis", headers=h, json={"proposition": r2.json()["proposition"]})
+    assert ok.json()["devis"]["numero"].startswith("SIMUL")
+    bad = c.post(f"/sessions/{sid}/creer-devis", headers=h, json={"proposition": {"client": {"statut": "introuvable"}, "lignes": []}})
+    assert bad.status_code == 422 and "code client manquant" in bad.json()["detail"]["bloquants"]
+    api.app.dependency_overrides.clear()

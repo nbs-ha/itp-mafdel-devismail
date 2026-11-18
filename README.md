@@ -27,18 +27,32 @@ Ce dépôt contient le coeur du backend (étape POC, sans Outlook) :
 - un `prix_unitaire` différent de celui renvoyé par `prix_article` est retiré ;
 - les lignes concernées passent en `a_verifier`, et la proposition porte la liste des `alertes`.
 
-## Utilisation
+## Tester en local (sans Outlook, sans certificat)
 
 ```bash
 pip install -e ".[dev]"
 python -m pytest                     # tests sans réseau (faux client)
-export ANTHROPIC_API_KEY=...         # nécessaire pour les vrais appels
-devis-ia samples/*.eml --divalto mock --out out
 ```
 
+**1. CLI sur des `.eml`** (vrai appel Claude, Divalto simulé) :
+```bash
+export ANTHROPIC_API_KEY=...
+devis-ia samples/*.eml --divalto mock --out out
+```
 Les mails réels vont dans `samples/` (ignoré par git : données clients). Modèle : `DEVIS_IA_MODEL` (défaut `claude-opus-5-5`). Repli serveur en cas de refus : actif par défaut, désactivable avec `DEVIS_IA_FALLBACKS=0`.
 
-## API interne (appelée par le complément Outlook)
+**2. Panneau dans un navigateur** (HTTP local, un mail d'exemple intégré remplace Outlook) :
+```bash
+DEVIS_IA_TOKEN=secret uvicorn devis_ia.api:app --port 8000
+# puis http://localhost:8000/addin/taskpane.html (jeton à saisir dans Réglages)
+```
+
+**3. Mode démo** (sans clé Claude ni Divalto) : `DEVIS_IA_DEMO=1` rejoue un scénario préenregistré à travers la vraie boucle et les vrais garde-fous.
+```bash
+DEVIS_IA_DEMO=1 DEVIS_IA_TOKEN=secret uvicorn devis_ia.api:app --port 8000
+```
+
+## API interne (appelée par le panneau)
 
 | Route | Rôle |
 |---|---|
@@ -46,36 +60,33 @@ Les mails réels vont dans `samples/` (ignoré par git : données clients). Mod�
 | `POST /sessions/{id}/corriger` | message libre du collaborateur + proposition éditée dans le panneau ; renvoie la proposition mise à jour |
 | `POST /sessions/{id}/creer-devis` | création dans Divalto **après validation** ; refuse (422) s'il manque client, code article ou quantité ; n'envoie aucun prix |
 | `GET /sante` | contrôle |
+| `GET /manifest.xml` | manifeste du complément (déploiement uniquement) |
 
 Authentification : en-tête `X-API-Key` = `DEVIS_IA_TOKEN` (POC ; à remplacer par l'authentification Windows/Entra pour le pilote). Sessions en mémoire, un seul processus.
 
-### Déploiement retenu : VM Windows interne (collaborateurs en réseau interne)
+Le panneau (`src/devis_ia/static/`) est en JavaScript simple, servi par l'API elle-même (`/addin/...`) : un seul service, pas de CORS. Il affiche le client, les lignes (éditables), les points à vérifier, le chat de correction et le bouton de création (confirmation en deux clics). Les prix sont en lecture seule ; modifier un article ou une quantité invalide le prix, à recalculer via le chat.
+
+## Déploiement (complément Outlook)
+
+Tout ce qui suit n'est nécessaire que pour le pilote, pas pour les tests ci-dessus.
+
+### VM Windows interne (collaborateurs en réseau interne)
 ```powershell
 py -3.12 -m venv .venv ; .venv\Scripts\pip install .
 $env:ANTHROPIC_API_KEY="..." ; $env:DEVIS_IA_TOKEN="..." ; $env:DEVIS_IA_DIVALTO="ws"
+$env:DEVIS_IA_PUBLIC_URL="https://<nom-du-serveur>:8443"
 .venv\Scripts\uvicorn devis_ia.api:app --host 0.0.0.0 --port 8443 --ssl-keyfile cle.pem --ssl-certfile cert.pem
 ```
-- Le complément Outlook exige du **HTTPS** : certificat émis par l'autorité interne de Mafdel, de confiance sur les postes (GPO).
+- Outlook exige du **HTTPS** : certificat serveur émis par l'autorité interne de Mafdel, de confiance sur les postes (GPO), dont le nom correspond à celui de l'URL du manifeste.
 - A installer comme service Windows (ex. NSSM) avec redémarrage automatique ; secrets hors du code.
 - Accès sortant autorisé uniquement vers `api.anthropic.com` ; accès aux web services Divalto en interne avec un compte technique dédié.
 
-## Complément Outlook (`src/devis_ia/static/`)
-
-Panneau latéral en JavaScript simple, servi par l'API elle-même (`/addin/...`) : un seul service à déployer, pas de CORS. Bouton **Devis IA** dans le ruban de lecture d'un mail. Le panneau lit le mail et ses PDF (Office.js), appelle l'API, affiche le client, les lignes (éditables), les points à vérifier, le chat de correction et le bouton de création (confirmation en deux clics). Les prix sont en lecture seule ; modifier un article ou une quantité invalide le prix, à recalculer via le chat.
-
-**Mode démo** (sans clé Claude ni Divalto) : `DEVIS_IA_DEMO=1` rejoue un scénario préenregistré à travers la vraie boucle et les vrais garde-fous. Essai dans un navigateur : `http://localhost:8000/addin/taskpane.html` (sans Outlook, un mail d'exemple est utilisé).
-
-```bash
-DEVIS_IA_DEMO=1 DEVIS_IA_TOKEN=secret uvicorn devis_ia.api:app --port 8000
-```
-
-### Installation sur un poste de test (Microsoft 365)
-1. Serveur accessible en **HTTPS** sur le poste (certificat de confiance), `DEVIS_IA_PUBLIC_URL=https://<nom-du-serveur>:8443`.
-2. Télécharger `https://<nom-du-serveur>:8443/manifest.xml`.
-3. Outlook : Obtenir des compléments > Mes compléments > Compléments personnalisés > Ajouter à partir d'un fichier > choisir le manifeste. (Intitulés à confirmer sur votre version.)
-4. Désinstallation : même écran, menu « … » du complément > Supprimer. Rien n'est installé sur le poste.
-5. Le poste doit pouvoir charger `https://appsforoffice.microsoft.com/lib/1/hosted/office.js` (Office.js est requis par Outlook).
-6. Au premier usage, saisir le jeton dans Réglages (POC).
+### Installation du complément sur un poste (Microsoft 365)
+1. Télécharger `https://<nom-du-serveur>:8443/manifest.xml`.
+2. Outlook : Obtenir des compléments > Mes compléments > Compléments personnalisés > Ajouter à partir d'un fichier > choisir le manifeste. (Intitulés à confirmer sur votre version.) Bouton **Devis IA** dans le ruban de lecture d'un mail.
+3. Désinstallation : même écran, menu « … » du complément > Supprimer. Rien n'est installé sur le poste.
+4. Le poste doit pouvoir charger `https://appsforoffice.microsoft.com/lib/1/hosted/office.js` (Office.js est requis par Outlook).
+5. Au premier usage, saisir le jeton dans Réglages (POC).
 
 **Non testé dans un vrai Outlook** : le manifeste, la lecture des pièces jointes et le chargement du panneau restent à valider sur un poste Windows. Le panneau lui-même a été vérifié dans Chromium. Limites actuelles : le panneau n'est pas épinglé (il se ferme en changeant de mail) ; la création de devis ne porte que sur les lignes principales, pas sur les variantes.
 

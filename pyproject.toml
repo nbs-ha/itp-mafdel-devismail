@@ -1,0 +1,23 @@
+[project]
+name = "devis-ia"
+version = "0.1.0"
+description = "POC Mafdel : création assistée de devis Divalto à partir d'e-mails, via l'API Claude"
+requires-python = ">=3.10"
+dependencies = ["anthropic>=1.0"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+devis-ia = "devis_ia.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

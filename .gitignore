@@ -1,0 +1,8 @@
+__pycache__/
+*.egg-info/
+.venv/
+.env
+# Mails clients réels : données personnelles, ne pas versionner
+samples/*
+!samples/README.md
+out/

@@ -1,0 +1,24 @@
+{
+  "_note": "Données de test limitées à ce qui figure dans les PDF d'exemple. A remplacer par les web services Divalto.",
+  "clients": [
+    {"code": "CTAMPL01", "nom": "DEXIS TAMPLEU SPRIET RENNES", "ville": "RENNES", "emails": [], "domaines": ["dexis.eu", "dexis.fr"], "commercial": "Patrick LE GUILLOU", "conditions_reglement": "Virement à 30 jours fin de mois le 15"},
+    {"code": "CSEFIS14", "nom": "SEFI SAS AGENCE DE LORIENT", "ville": "CAUDAN", "emails": ["mlelay@sefitransmission.fr"], "domaines": ["sefitransmission.fr"], "commercial": "Patrick LE GUILLOU", "conditions_reglement": "Virement à 30 jours fin de mois le 30"}
+  ],
+  "articles": [
+    {"code": "DFPW3RFUSSXAC17-0001", "designation": "Courroie plate DEL/FLEX blanche ép. 3mm renforcée face inférieure, grainée multipans face supérieure + guide trap. SOUPLEX armé cranté 17x11mm", "unite": "P", "prix": 928.31},
+    {"code": "DFVR22SPI0001", "designation": "Courroie trap. DEL/FLEX rouge 22x14mm + revêtement SOUPLEX picots blanc ép. 3mm", "unite": "M", "prix": 20.9703},
+    {"code": "J60", "designation": "Pince J60", "unite": "P", "prix": 167.69},
+    {"code": "MC50", "designation": "Fer à souder MC50 avec régulation électronique (230V)", "unite": "P", "prix": 238.07},
+    {"code": "DFBW3", "designation": "Bande Delflex blanche ép. 3 mm", "unite": "P", "prix": null},
+    {"code": "NT70-22-B90", "designation": "Racleur DEL/CLEAN standard en PU bleu 90ShA hauteur lame 70mm pour tube d 22mm", "unite": "P", "prix": null},
+    {"code": "ST22-S", "designation": "Système de torsion standard pour tube Ø22mm", "unite": "P", "prix": null}
+  ],
+  "devis": [
+    {"numero": "114579", "date": "2026-11-05", "code_client": "CTAMPL01", "reference_client": "DDP MAIL DU 02/11/26", "delai": "7-9 jours",
+     "lignes": [
+       {"code_article": "DFPW3RFUSSXAC17-0001", "quantite": 1, "unite": "P", "prix_unitaire": 928.31, "precisions": "Largeur 30 mm, longueur ouverte 35000 mm"},
+       {"code_article": "J60", "quantite": 1, "unite": "P", "prix_unitaire": 167.69},
+       {"code_article": "MC50", "quantite": 1, "unite": "P", "prix_unitaire": 238.07}
+     ]}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "_note": "Attendus déduits de la lecture des 12 mails d'exemple (à faire valider par Mafdel). Clé = nom du fichier .eml.",
+  "NoFileName.eml": {"client": "MC Vulca (Saint-Saturnin) - via commercial Mafdel", "intention": "nouveau_devis", "lignes": 2, "difficulte": "equivalence concurrent HABASIT, longueurs 175 et 195 mm, 30 pièces chacune"},
+  "NoFileName[1].eml": {"client": "ANDROS / Prolainat (Aubiet) - ambigu", "intention": "nouveau_devis", "lignes": 2, "codes_mafdel": ["NT70-22-B90", "ST22-S"], "source": "PDF"},
+  "NoFileName[2].eml": {"client": "SEFI Lorient CSEFIS14", "intention": "mise_a_jour_devis", "difficulte": "la PJ est une confirmation de commande 2025 ; périmètre à confirmer"},
+  "NoFileName[3].eml": {"client": "DEXIS Le Passage (47) - agence a identifier", "intention": "nouveau_devis", "lignes": 1, "quantite": "60 M", "article": "courroie ronde DEL/FLEX rouge 8 mm"},
+  "NoFileName[4].eml": {"client": "SODIAMA", "intention": "nouveau_devis", "lignes": 1, "quantite": "60 M", "article": "DFR R08 (réf. interne client)"},
+  "NoFileName[5].eml": {"client": "Katell Gastronomie (prospect probable)", "intention": "nouveau_devis", "lignes": 1, "quantite": 10, "article": "SXRT05 335/25"},
+  "NoFileName[6].eml": {"client": "CTEA concept (prospect probable)", "intention": "nouveau_devis", "lignes": 1, "difficulte": "trapézoïdale 13x8 blanche picots verts, 8 m : article peut-être inexistant"},
+  "NoFileName[7].eml": {"client": "La Compagnie des Fromages (prospect probable)", "intention": "demande_info_ou_distributeur", "lignes": 1, "article": "MC50", "difficulte": "offre de prix OU nom d'un distributeur"},
+  "NoFileName[8].eml": {"client": "SEEMI SAS (prospect probable)", "intention": "nouveau_devis", "lignes": 1, "article": "fer à souder W0405 230V 50Hz", "difficulte": "équivalence éventuelle avec MC50 à confirmer"},
+  "NoFileName[9].eml": {"client": "Eiffage Energie Système (prospect probable)", "intention": "nouveau_devis", "lignes": 1, "quantite": 110, "article": "courroie ronde sans fin lisse Souplex Ø5, 345 mm"},
+  "NoFileName[10].eml": {"client": "Proditec (Pessac)", "intention": "nouveau_devis", "lignes": 1, "codes_mafdel": ["DFBW3"], "source": "PDF Odoo, prix ET délai demandés"},
+  "NoFileName[11].eml": {"client": "DEXIS Rennes CTAMPL01", "intention": "variantes_devis_existant", "devis_source": "114579", "variantes": 5, "difficulte": "ne changer que le revêtement : SUS, SPI, TPI, NA, NC ; J60 et MC50 hors périmètre"}
+}
